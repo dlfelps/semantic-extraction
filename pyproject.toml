@@ -1,0 +1,22 @@
+[project]
+name = "langextract"
+version = "0.1.0"
+description = "Scene graph extraction comparison: T5 vs LLM-based extraction"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "FactualSceneGraph",
+    "langextract",
+    "anthropic",
+    "datasets",
+    "torch",
+    "pandas",
+    "numpy",
+    "matplotlib",
+    "seaborn",
+    "python-dotenv",
+    "scikit-learn",
+    "transformers",
+    "sentencepiece",
+    "protobuf",
+]
