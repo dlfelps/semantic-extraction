@@ -1,5 +1,5 @@
 [project]
-name = "langextract"
+name = "semanticextraction"
 version = "0.1.0"
 description = "Scene graph extraction comparison: T5 vs LLM-based extraction"
 readme = "README.md"
@@ -19,4 +19,5 @@ dependencies = [
     "transformers",
     "sentencepiece",
     "protobuf",
+    "python-magic-bin>=0.4.14",
 ]
