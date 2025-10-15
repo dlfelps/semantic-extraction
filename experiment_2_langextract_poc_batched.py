@@ -23,8 +23,8 @@ from dotenv import load_dotenv
 import langextract as lx
 from langextract.data import ExampleData, Extraction, Document
 
-# Import shared components from experiment 1 (for dataset loading and complexity classification)
-from experiment_1_t5_baseline import T5BaselineEvaluator
+# Import dataset utilities
+from dataset_utils import get_experiment_2_test_set, classify_complexity
 
 # Import FACTUAL metrics utilities
 from factual_metrics import (
