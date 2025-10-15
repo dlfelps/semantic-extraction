@@ -28,6 +28,9 @@ from langextract.data import ExampleData, Extraction, Document
 # Import Google Generative AI for native structured output
 import google.generativeai as genai
 
+# Import dataset utilities
+from dataset_utils import get_experiment_4_test_set, classify_complexity
+
 # Import shared components
 from factual_metrics import (
     EvaluationMetrics,
@@ -37,39 +40,6 @@ from factual_metrics import (
 )
 
 load_dotenv()
-
-
-# ============================================================================
-# Helper Functions (from experiment_1_t5_baseline.py - without loading T5 model)
-# ============================================================================
-
-def load_factual_dataset(split: str = "train", num_samples: int = 100, test_split: bool = True, use_complex_only: bool = False):
-    """Load FACTUAL dataset without requiring T5 model."""
-    dataset = load_dataset("lizhuang144/FACTUAL_Scene_Graph", split=split, cache_dir="./cache")
-
-    if test_split:
-        dataset = dataset.shuffle(seed=42).select(range(len(dataset) // 10))
-
-    if use_complex_only:
-        # Filter to complex captions (>20 words)
-        dataset = dataset.filter(lambda x: len(x.get("caption", "").split()) > 20)
-
-    if num_samples and num_samples < len(dataset):
-        dataset = dataset.select(range(num_samples))
-
-    return list(dataset)
-
-
-def classify_complexity(caption: str) -> str:
-    """Classify caption complexity without requiring T5 model."""
-    word_count = len(caption.split())
-
-    if word_count <= 10:
-        return "simple"
-    elif word_count <= 20:
-        return "medium"
-    else:
-        return "complex"
 
 
 # ============================================================================
@@ -641,18 +611,9 @@ def main():
     print("EXPERIMENT 4: LANGEXTRACT VS NATIVE GEMINI STRUCTURED OUTPUT")
     print("="*80 + "\n")
 
-    # Load samples (same as experiments 2 & 3 - complex only)
-    all_samples = load_factual_dataset(
-        split="train",
-        num_samples=100,
-        test_split=True,
-        use_complex_only=True
-    )
-
-    # Select 50 diverse samples
-    indices = np.linspace(0, len(all_samples) - 1, 50, dtype=int)
-    samples = [all_samples[int(i)] for i in indices]
-    print(f"Selected {len(samples)} diverse samples\n")
+    # Load test set using centralized dataset utilities
+    samples = get_experiment_4_test_set()
+    print(f"Loaded {len(samples)} diverse samples from centralized test set\n")
 
     # Initialize evaluators
     langextract_eval = LangExtractEvaluator(

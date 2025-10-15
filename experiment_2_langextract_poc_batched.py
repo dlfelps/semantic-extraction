@@ -308,9 +308,6 @@ class BatchedLangExtractEvaluator:
         print(f"\nEvaluating LangExtract on {len(samples)} samples (BATCHED)...")
         print("=" * 80)
 
-        # Reuse T5 evaluator for parsing ground truth and computing metrics
-        t5_eval = T5BaselineEvaluator()
-
         # Extract all captions
         captions = [sample.get("caption", "") for sample in samples]
         ground_truth_strs = [sample.get("scene_graph", "") for sample in samples]
@@ -343,7 +340,7 @@ class BatchedLangExtractEvaluator:
             all_factual_metrics.append(factual_metrics)
 
             # Classify complexity
-            complexity = t5_eval.classify_complexity(caption)
+            complexity = classify_complexity(caption)
             complexity_groups_factual[complexity].append(factual_metrics)
 
             # Store detailed result
@@ -453,21 +450,10 @@ class BatchedLangExtractEvaluator:
 def main():
     """Main evaluation function for Experiment 2 (Batched)."""
 
-    # Load the same test set as Experiment 1 (100 complex examples)
-    # We'll select 30 diverse samples from this set
-    t5_eval = T5BaselineEvaluator()
-    all_samples = t5_eval.load_factual_dataset(
-        split="train",
-        num_samples=100,
-        test_split=True,
-        use_complex_only=True
-    )
+    # Load test set using centralized dataset utilities
+    samples = get_experiment_2_test_set()
 
-    # Select 30 diverse samples (every ~3rd sample to ensure diversity)
-    indices = np.linspace(0, len(all_samples) - 1, 30, dtype=int)
-    samples = [all_samples[int(i)] for i in indices]
-
-    print(f"Selected {len(samples)} diverse samples from Experiment 1 test set")
+    print(f"Loaded {len(samples)} diverse samples from centralized test set")
 
     # Initialize LangExtract evaluator with batch settings
     evaluator = BatchedLangExtractEvaluator(

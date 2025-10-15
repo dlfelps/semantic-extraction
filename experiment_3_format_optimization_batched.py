@@ -29,6 +29,9 @@ from dotenv import load_dotenv
 import langextract as lx
 from langextract.data import ExampleData, Extraction, Document
 
+# Import dataset utilities
+from dataset_utils import get_experiment_3_test_set, classify_complexity
+
 # Import FACTUAL metrics utilities
 from factual_metrics import (
     EvaluationMetrics,
@@ -42,39 +45,6 @@ from factual_metrics import (
 )
 
 load_dotenv()
-
-
-# ============================================================================
-# Helper Functions (without loading T5 model)
-# ============================================================================
-
-def load_factual_dataset(split: str = "train", num_samples: int = 100, test_split: bool = True, use_complex_only: bool = False):
-    """Load FACTUAL dataset without requiring T5 model."""
-    dataset = load_dataset("lizhuang144/FACTUAL_Scene_Graph", split=split, cache_dir="./cache")
-
-    if test_split:
-        dataset = dataset.shuffle(seed=42).select(range(len(dataset) // 10))
-
-    if use_complex_only:
-        # Filter to complex captions (>20 words)
-        dataset = dataset.filter(lambda x: len(x.get("caption", "").split()) > 20)
-
-    if num_samples and num_samples < len(dataset):
-        dataset = dataset.select(range(num_samples))
-
-    return list(dataset)
-
-
-def classify_complexity(caption: str) -> str:
-    """Classify caption complexity without requiring T5 model."""
-    word_count = len(caption.split())
-
-    if word_count <= 10:
-        return "simple"
-    elif word_count <= 20:
-        return "medium"
-    else:
-        return "complex"
 
 
 # ============================================================================
@@ -818,19 +788,10 @@ class BatchedFormatEvaluator:
 def main():
     """Main evaluation function for Experiment 3 (Format Optimization - Batched)."""
 
-    # Load the same test set as Experiment 1
-    all_samples = load_factual_dataset(
-        split="train",
-        num_samples=100,
-        test_split=True,
-        use_complex_only=True
-    )
+    # Load test set using centralized dataset utilities
+    samples = get_experiment_3_test_set()
 
-    # Select 50 diverse samples
-    indices = np.linspace(0, len(all_samples) - 1, 50, dtype=int)
-    samples = [all_samples[int(i)] for i in indices]
-
-    print(f"Selected {len(samples)} diverse samples from Experiment 1 test set")
+    print(f"Loaded {len(samples)} diverse samples from centralized test set")
     print("\n" + "=" * 80)
     print("EXPERIMENT 3: FORMAT OPTIMIZATION (BATCHED)")
     print("=" * 80)
